@@ -1,0 +1,167 @@
+# Jessica Muoio
+# 6.Mai.2024
+# Bewerbung SBB
+
+import pygame
+import sys
+
+# Initialize Pygame
+pygame.init()
+
+# Set up the screen
+SCREEN_WIDTH = 1200
+SCREEN_HEIGHT = 800
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Meine SBB-Reise")
+
+# Define colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GRAY = (128, 128, 128)
+
+# Define train parameters
+TRAIN_WIDTH = 200
+TRAIN_HEIGHT = 100
+WHEEL_RADIUS = 20
+TRACK_WIDTH = 40
+TRAIN_SPEED = 3
+
+# Define train path with 4 stops
+path_points = [(300, 300), (600, 300), (800, 400), (1000, 500)]
+
+# Define additional question and answer
+additional_question = ""
+additional_answer = ""
+
+# Add additional station information
+additional_station_info = "Ein Fun-Fact über mich:"
+
+# Define questions and answers
+questions = [
+    "",
+    ""
+
+answers = [
+    "",
+    "",
+    "",
+    additional_answer
+]
+
+# Information at each station
+stations_info = [
+    "Wer bin ich?",
+    "Was sind meine Karrierewünsche?",
+    "Warum möchte ich zur SBB?",
+    additional_station_info
+]
+
+# Initialize train position and index
+train_pos = list(path_points[0])  
+path_index = 0
+
+# Load font
+font = pygame.font.SysFont("Arial", 50)
+
+# Flag to indicate if question is asked at a station
+question_asked = False
+
+# Flag to indicate if answer is shown
+answer_shown = False
+
+# Main loop
+running = True
+while running:
+    # Handle events
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RETURN:
+                if question_asked and not answer_shown:
+                    answer_shown = True
+                else:
+                    if path_index < len(questions):
+                        question_asked = True
+                        answer_shown = False
+                        path_index += 1
+
+    # Clear the screen
+    screen.fill(WHITE)
+
+    # Draw tracks
+    for i in range(len(path_points) - 1):
+        pygame.draw.line(screen, GRAY, path_points[i], path_points[i + 1], TRACK_WIDTH)
+
+    # Draw train stop signs and make the train stop at each station
+    for station in path_points:
+        pygame.draw.rect(screen, WHITE, (station[0] - 60, station[1] - 60, 120, 120))
+        pygame.draw.rect(screen, BLACK, (station[0] - 60, station[1] - 60, 120, 120), 3)
+        pygame.draw.circle(screen, RED, station, 20)
+        if train_pos[0] == station[0] and train_pos[1] == station[1]:
+            question_asked = False  
+            answer_shown = False  
+
+    # Draw train wheels
+    wheel1_pos = [train_pos[0] + 40, train_pos[1] + TRAIN_HEIGHT - 20]
+    wheel2_pos = [train_pos[0] + TRAIN_WIDTH - 40, train_pos[1] + TRAIN_HEIGHT - 20]
+    wheel3_pos = [train_pos[0] + 40, train_pos[1] + TRAIN_HEIGHT + 20]
+    wheel4_pos = [train_pos[0] + TRAIN_WIDTH - 40, train_pos[1] + TRAIN_HEIGHT + 20]
+    pygame.draw.circle(screen, RED, wheel1_pos, 20)
+    pygame.draw.circle(screen, RED, wheel2_pos, 20)
+    pygame.draw.circle(screen, RED, wheel3_pos, 20)
+    pygame.draw.circle(screen, RED, wheel4_pos, 20)
+
+    # Draw train
+    pygame.draw.rect(screen, RED, (train_pos[0], train_pos[1], TRAIN_WIDTH, TRAIN_HEIGHT))
+
+    # Draw "SBB" text on the train
+    sbb_text = font.render("SBB", True, WHITE)
+    text_rect = sbb_text.get_rect(center=(train_pos[0] + TRAIN_WIDTH // 2, train_pos[1] + TRAIN_HEIGHT // 2))
+    screen.blit(sbb_text, text_rect)
+
+    # Update train position
+    if path_index < len(path_points):
+        target_pos = path_points[path_index]
+        dx = target_pos[0] - train_pos[0]
+        dy = target_pos[1] - train_pos[1]
+        dist = (dx ** 2 + dy ** 2) ** 0.5
+        if dist > TRAIN_SPEED:
+            move_x = dx / dist * TRAIN_SPEED
+            move_y = dy / dist * TRAIN_SPEED
+            train_pos[0] += move_x
+            train_pos[1] += move_y
+        else:
+            train_pos[0] = target_pos[0]
+            train_pos[1] = target_pos[1]
+
+    # Display information at each station
+    if path_index < len(stations_info):
+        info = stations_info[path_index]
+        info_surface = font.render(info, True, BLACK)
+        screen.blit(info_surface, (40, SCREEN_HEIGHT - 60))
+
+    # Ask question at each station
+    if path_index < len(questions) and question_asked:
+        question = questions[path_index]
+        question_surface = font.render(question, True, BLACK)
+        screen.blit(question_surface, (40, SCREEN_HEIGHT - 110))
+
+    # Show answer if question is asked and Enter is pressed
+    if path_index - 1 < len(answers) and question_asked and answer_shown:
+        answer = answers[path_index - 1]
+        answer_surface = font.render(answer, True, BLACK)
+        screen.blit(answer_surface, (40, SCREEN_HEIGHT - 160))
+
+    # Update the display
+    pygame.display.flip()
+
+    # Limit the frame rate
+    pygame.time.Clock().tick(30)
+
+# Quit Pygame
+pygame.quit()
+sys.exit()
+
+# Mit Hilfe von OpenAI. ChatGPT. chat.openai.com/. Abgerufen am 1. Mai 2024.
